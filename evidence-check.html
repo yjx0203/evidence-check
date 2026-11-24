@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evidence Check | CNN revision prototype</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: system-ui, sans-serif;
+      background: #f0f4f5;
+      color: #182b34;
+      line-height: 1.55;
+      --teal: #125e57;
+      --ink: #132e38;
+      --muted: #415761;
+      --border: #c6d4d8;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; }
+    .wrap { width: min(100% - 2rem, 66rem); margin-inline: auto; }
+    header { background: var(--ink); color: white; padding: 2.25rem 0 2rem; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; letter-spacing: -.04em; }
+    header p { color: #dbe7e9; margin-top: .75rem; max-width: 44rem; }
+    main { padding-block: 1.5rem 3rem; }
+    .case-nav { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    button, summary { cursor: pointer; }
+    button {
+      font: inherit;
+      font-weight: 650;
+      color: var(--ink);
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: .55rem;
+      padding: .6rem .95rem;
+    }
+    button:hover:not(:disabled) { border-color: var(--teal); }
+    :focus-visible { outline: 3px solid #2574b3; outline-offset: 4px; }
+    .case-nav button[aria-pressed="true"] { color: white; background: var(--ink); border-color: var(--ink); }
+    .card { background: white; border: 1px solid var(--border); border-radius: .9rem; padding: clamp(1rem, 3vw, 1.6rem); }
+    .question { font-size: clamp(1.25rem, 3vw, 1.65rem); line-height: 1.35; margin-top: .35rem; }
+    .label { font-size: .875rem; font-weight: 700; color: var(--muted); }
+    .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin-top: 1.35rem; }
+    .panel { border-radius: .65rem; padding: 1rem; background: #edf3f5; }
+    .panel.evidence { background: #eaf4f1; }
+    .panel h3 { font-size: 1rem; margin-bottom: .55rem; }
+    blockquote { margin: 0; }
+    .claim { font-size: 1.125rem; font-weight: 550; }
+    .formula {
+      margin-top: .55rem;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: clamp(.85rem, 2.5vw, 1.04rem);
+    }
+    details { margin-top: .8rem; color: var(--muted); font-size: .9rem; }
+    details p { margin-top: .4rem; }
+    summary { color: var(--teal); font-weight: 650; }
+    .judgment { margin-top: 1.35rem; border-top: 1px solid var(--border); padding-top: 1.15rem; }
+    fieldset { padding: 0; margin: 0 0 .9rem; border: 0; min-width: 0; }
+    legend { padding: 0; font-weight: 700; margin-bottom: .65rem; }
+    .options { display: flex; gap: .55rem; flex-wrap: wrap; }
+    .option { display: flex; align-items: center; gap: .5rem; padding: .5rem .7rem; border: 1px solid var(--border); border-radius: .55rem; cursor: pointer; }
+    .option:has(input:checked) { border-color: var(--teal); background: #eaf4f1; }
+    input[type="radio"] { accent-color: var(--teal); width: 1.1rem; height: 1.1rem; margin: 0; }
+    .submit { background: var(--teal); color: white; border-color: var(--teal); }
+    .submit:disabled { background: #e0e8eb; color: #465a63; border-color: #d0dce0; cursor: default; }
+    .feedback { border-left: .3rem solid var(--teal); background: #eaf4f1; border-radius: .3rem; padding: 1rem; }
+    .feedback h3 { margin-bottom: .4rem; }
+    .feedback p + p { margin-top: .35rem; }
+    .feedback button { margin-top: .85rem; }
+    @media (max-width: 42rem) {
+      .comparison { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Evidence Check</h1>
+      <p>Compare a simulated AI claim with its cited passage, then decide whether the passage supports it.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <nav class="case-nav" aria-label="Practice cases">
+      <button type="button" data-case="0" aria-pressed="true">Case 1</button>
+      <button type="button" data-case="1" aria-pressed="false">Case 2</button>
+    </nav>
+
+    <article class="card" aria-labelledby="question">
+      <p class="label">CNN revision question</p>
+      <h2 class="question" id="question">When does a 5 × 5 input produce a 5 × 5 output with a 3 × 3 convolution kernel?</h2>
+
+      <div class="comparison">
+        <section class="panel" aria-labelledby="claim-heading">
+          <h3 id="claim-heading">Simulated AI claim</h3>
+          <blockquote class="claim" id="claim"></blockquote>
+        </section>
+
+        <section class="panel evidence" aria-labelledby="evidence-heading">
+          <h3 id="evidence-heading">Cited passage</h3>
+          <blockquote>
+            <p>With no dilation and equal padding on both sides of an axis, use the following formula for the output size along that axis.</p>
+            <p class="formula">Output size = ⌊(N + 2P − K) / S⌋ + 1</p>
+          </blockquote>
+          <details id="source">
+            <summary>Source details and symbols</summary>
+            <p>Convolution output size, section 1. Teaching note written for this prototype.</p>
+            <p>N = input size, P = padding on each side, K = kernel size, S = stride. The floor brackets round down to an integer.</p>
+          </details>
+        </section>
+      </div>
+
+      <div class="judgment">
+        <form id="judgment-form">
+          <fieldset>
+            <legend>Does the passage support the claim?</legend>
+            <div class="options">
+              <label class="option"><input type="radio" name="support" value="supported" required> Supported</label>
+              <label class="option"><input type="radio" name="support" value="not-supported"> Not supported by this passage</label>
+            </div>
+          </fieldset>
+          <button class="submit" id="check" type="submit" disabled>Check my judgment</button>
+        </form>
+
+        <section class="feedback" id="feedback" aria-labelledby="verdict" hidden>
+          <h3 id="verdict" tabindex="-1"></h3>
+          <p id="recorded-choice"></p>
+          <p id="explanation"></p>
+          <button id="revise" type="button">Change my judgment</button>
+        </section>
+      </div>
+    </article>
+  </main>
+
+  <script>
+    // Each case stores a simulated claim and a prewritten reference judgment.
+    const cases = [
+      {
+        claim: 'With no dilation, a stride of 1 and one pixel of padding on each side give a 5 × 5 output.',
+        expected: 'supported',
+        explanation: 'Substitute N = 5, P = 1, K = 3 and S = 1. The formula gives ⌊(5 + 2 − 3) / 1⌋ + 1 = 5 on each axis.'
+      },
+      {
+        claim: 'With no dilation, adding padding always makes the output the same size as the input, regardless of stride.',
+        expected: 'not-supported',
+        explanation: 'A counterexample uses N = 5, P = 1, K = 3 and S = 2. The formula gives ⌊(5 + 2 − 3) / 2⌋ + 1 = 3 on each axis, so the output is 3 × 3.'
+      }
+    ];
+
+    const choiceLabels = {
+      supported: 'Supported',
+      'not-supported': 'Not supported by this passage'
+    };
+
+    const caseButtons = Array.from(document.querySelectorAll('[data-case]'));
+    const claim = document.querySelector('#claim');
+    const source = document.querySelector('#source');
+    const form = document.querySelector('#judgment-form');
+    const check = document.querySelector('#check');
+    const feedback = document.querySelector('#feedback');
+    const verdict = document.querySelector('#verdict');
+    const recordedChoice = document.querySelector('#recorded-choice');
+    const explanation = document.querySelector('#explanation');
+    const revise = document.querySelector('#revise');
+    let activeCase = 0;
+
+    function showCase(index) {
+      activeCase = index;
+      claim.textContent = cases[index].claim;
+      source.open = false;
+      form.reset();
+      check.disabled = true;
+      feedback.hidden = true;
+      form.hidden = false;
+      for (const button of caseButtons) {
+        button.setAttribute('aria-pressed', String(Number(button.dataset.case) === index));
+      }
+    }
+
+    for (const button of caseButtons) {
+      button.addEventListener('click', () => {
+        const index = Number(button.dataset.case);
+        if (index !== activeCase) showCase(index);
+      });
+    }
+
+    form.addEventListener('change', () => {
+      check.disabled = false;
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const choice = new FormData(form).get('support');
+      const example = cases[activeCase];
+
+      verdict.textContent = example.expected === 'supported'
+        ? 'The passage supports this claim'
+        : 'The passage does not support this claim';
+      recordedChoice.textContent = 'You chose: ' + choiceLabels[choice] + '.';
+      explanation.textContent = example.explanation;
+      form.hidden = true;
+      feedback.hidden = false;
+      verdict.focus();
+    });
+
+    revise.addEventListener('click', () => {
+      feedback.hidden = true;
+      form.hidden = false;
+      form.querySelector('input:checked').focus();
+    });
+
+    showCase(0);
+  </script>
+</body>
+</html>
